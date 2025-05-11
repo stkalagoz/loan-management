@@ -19,7 +19,8 @@ public class Loan {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private Long customerId;
+    @OneToOne(optional = false, fetch = FetchType.LAZY)
+    private Customer customer;
 
     @Column(nullable = false)
     private BigDecimal loanAmount;
