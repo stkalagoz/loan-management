@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Set;
 
 @RequiredArgsConstructor
 @Service
@@ -21,10 +22,17 @@ public class LoanService {
 
     private final LoanRepository loanRepository;
     private final CustomerService customerService;
+    private static final Set<Integer> ALLOWED_INSTALLMENTS = Set.of(6, 9, 12, 24);
+    private static final BigDecimal MIN_INTEREST_RATE = new BigDecimal("0.1");
+    private static final BigDecimal MAX_INTEREST_RATE = new BigDecimal("0.5");
+
 
     public void create(LoanRequest loanRequest) throws IllegalAccessException {
         Long customerId = loanRequest.customerId();
         Customer customer=customerService.findById(customerId);
+        validateAmount(loanRequest.amount(),customer);
+        validateInstallmentCount(loanRequest.numberOfInstallments());
+        validateInterestRate(loanRequest.interestRate());
         List<LoanInstallment> loanInstallments = calculateLoanInstallmentByLoanAmount(loanRequest.amount());
         Loan loan = Loan.builder().
                 customer(customer).
@@ -36,6 +44,31 @@ public class LoanService {
                 build();
 
         loanRepository.save(loan);
+    }
+
+
+    private void validateInstallmentCount(int numberOfInstallments) {
+        if (!ALLOWED_INSTALLMENTS.contains(numberOfInstallments)) {
+            throw new IllegalArgumentException("Installment count must be one of: 6, 9, 12, or 24");
+        }
+    }
+
+    private void validateAmount(BigDecimal loanAmount, Customer customer) {
+        BigDecimal creditLimit = customer.getCreditLimit();
+        BigDecimal usedCreditLimit = customer.getUsedCreditLimit();
+        BigDecimal totalUsage = usedCreditLimit.add(loanAmount);
+
+        if (creditLimit.compareTo(totalUsage) < 0) { // total > limit
+            throw new RuntimeException("Insufficient credit limit for this loan");
+        }
+    }
+
+    private void validateInterestRate(BigDecimal interestRate) {
+        if (interestRate == null
+                || interestRate.compareTo(MIN_INTEREST_RATE) < 0
+                || interestRate.compareTo(MAX_INTEREST_RATE) > 0) {
+            throw new IllegalArgumentException("Interest rate must be between 0.1 and 0.5 inclusive");
+        }
     }
 
     private List<LoanInstallment> calculateLoanInstallmentByLoanAmount(BigDecimal amount) {
