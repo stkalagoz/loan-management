@@ -1,5 +1,6 @@
 package com.ing.loan.management.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -19,6 +20,7 @@ public class Loan {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @JsonIgnore
     @OneToOne(optional = false, fetch = FetchType.LAZY)
     private Customer customer;
 
@@ -34,6 +36,7 @@ public class Loan {
     @Column(nullable = false)
     private Boolean isPaid;
 
+    @Column(nullable = false)
     @OneToMany(mappedBy = "loan", cascade = CascadeType.ALL)
     private List<LoanInstallment> installments;
 

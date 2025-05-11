@@ -1,11 +1,15 @@
 package com.ing.loan.management.controller;
 
+import com.ing.loan.management.criteria.CriteriaRequest;
+import com.ing.loan.management.entity.Loan;
 import com.ing.loan.management.request.LoanRequest;
 import com.ing.loan.management.service.LoanService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @Slf4j
 @RestController
@@ -22,5 +26,9 @@ public class LoanController {
         service.create(request);
     }
 
+    @GetMapping("/filter")
+    public List<Loan> filterLoans(@RequestBody CriteriaRequest request) {
+        return service.filterLoans(request);
+    }
 }
 

@@ -1,11 +1,14 @@
 package com.ing.loan.management.service;
 
+import com.ing.loan.management.criteria.CriteriaRequest;
+import com.ing.loan.management.criteria.SpecificationBuilder;
 import com.ing.loan.management.entity.Customer;
 import com.ing.loan.management.entity.Loan;
 import com.ing.loan.management.entity.LoanInstallment;
 import com.ing.loan.management.repository.LoanRepository;
 import com.ing.loan.management.request.LoanRequest;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -39,4 +42,8 @@ public class LoanService {
         return null;
     }
 
+    public List<Loan> filterLoans(CriteriaRequest criteriaRequest) {
+        Specification<Loan> spec = SpecificationBuilder.buildSpecification(criteriaRequest.getCriteriaList());
+        return loanRepository.findAll(spec).stream().toList();
+    }
 }
