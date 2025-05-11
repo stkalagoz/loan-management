@@ -12,6 +12,6 @@ public class CustomerService {
     private final CustomerRepository repository;
 
     public Customer findById(Long customerId) {
-        return repository.findById(customerId).orElseThrow().getCustomer();
+        return repository.findById(customerId).orElseThrow();
     }
 }
