@@ -1,12 +1,17 @@
 package com.ing.loan.management.controller;
 
-import com.ing.loan.management.criteria.CriteriaRequest;
+import com.ing.loan.management.filter.LoanFilterRequest;
 import com.ing.loan.management.entity.Loan;
 import com.ing.loan.management.request.LoanRequest;
 import com.ing.loan.management.service.LoanService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -19,15 +24,27 @@ public class LoanController {
 
     private final LoanService service;
 
+    @Operation(
+            summary = "Create a new loan",
+            description = "Creates a new loan for a given customer with the specified amount, interest rate, and installment count.",
+            responses = {
+                    @ApiResponse(responseCode = "201", description = "Loan created successfully",
+                            content = @Content(schema = @Schema(implementation = Loan.class))),
+                    @ApiResponse(responseCode = "400", description = "Invalid input", content = @Content),
+                    @ApiResponse(responseCode = "500", description = "Internal server error", content = @Content)
+            }
+    )
+
     @PostMapping("/create")
     @ResponseStatus(HttpStatus.CREATED)
-    public void create(@RequestBody LoanRequest request) throws IllegalAccessException {
+    public ResponseEntity<Loan> create(@RequestBody LoanRequest request) throws IllegalAccessException {
         log.info("new loan creation {}", request);
-        service.create(request);
+        Loan loan = service.create(request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(loan);
     }
 
     @GetMapping("/filter")
-    public List<Loan> filterLoans(@RequestBody CriteriaRequest request) {
+    public List<Loan> filterLoans(@RequestBody LoanFilterRequest request) {
         return service.filterLoans(request);
     }
 }

@@ -21,7 +21,7 @@ public class Loan {
     private Long id;
 
     @JsonIgnore
-    @OneToOne(optional = false, fetch = FetchType.LAZY)
+    @ManyToOne(optional = false, fetch = FetchType.LAZY)
     private Customer customer;
 
     @Column(nullable = false)

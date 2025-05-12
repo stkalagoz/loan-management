@@ -1,7 +1,7 @@
 package com.ing.loan.management.service;
 
-import com.ing.loan.management.criteria.CriteriaRequest;
-import com.ing.loan.management.criteria.SpecificationBuilder;
+import com.ing.loan.management.filter.LoanFilterRequest;
+import com.ing.loan.management.filter.SpecificationBuilder;
 import com.ing.loan.management.entity.Customer;
 import com.ing.loan.management.entity.Loan;
 import com.ing.loan.management.entity.LoanInstallment;
@@ -12,7 +12,9 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
@@ -27,23 +29,24 @@ public class LoanService {
     private static final BigDecimal MAX_INTEREST_RATE = new BigDecimal("0.5");
 
 
-    public void create(LoanRequest loanRequest) throws IllegalAccessException {
+    public Loan create(LoanRequest loanRequest) throws IllegalAccessException {
         Long customerId = loanRequest.customerId();
-        Customer customer=customerService.findById(customerId);
-        validateAmount(loanRequest.amount(),customer);
+        Customer customer = customerService.findById(customerId);
+        validateAmount(loanRequest.amount(), customer);
         validateInstallmentCount(loanRequest.numberOfInstallments());
         validateInterestRate(loanRequest.interestRate());
-        List<LoanInstallment> loanInstallments = calculateLoanInstallmentByLoanAmount(loanRequest.amount());
         Loan loan = Loan.builder().
                 customer(customer).
                 loanAmount(loanRequest.amount()).
                 numberOfInstallment(loanRequest.numberOfInstallments()).
                 createDate(LocalDate.now()).
                 isPaid(false).
-                installments(loanInstallments).
                 build();
 
-        loanRepository.save(loan);
+        List<LoanInstallment> loanInstallments = prepareLoanInstallments(loanRequest, loan);
+        loan.setInstallments(loanInstallments);
+
+        return loanRepository.save(loan);
     }
 
 
@@ -58,7 +61,7 @@ public class LoanService {
         BigDecimal usedCreditLimit = customer.getUsedCreditLimit();
         BigDecimal totalUsage = usedCreditLimit.add(loanAmount);
 
-        if (creditLimit.compareTo(totalUsage) < 0) { // total > limit
+        if (creditLimit.compareTo(totalUsage) < 0) {
             throw new RuntimeException("Insufficient credit limit for this loan");
         }
     }
@@ -71,12 +74,42 @@ public class LoanService {
         }
     }
 
-    private List<LoanInstallment> calculateLoanInstallmentByLoanAmount(BigDecimal amount) {
-        return null;
+    private List<LoanInstallment> prepareLoanInstallments(LoanRequest loanRequest, Loan loan) {
+        BigDecimal totalAmount = loanRequest.amount().multiply(BigDecimal.ONE.add(loanRequest.interestRate()));
+        int numberOfInstallments = loanRequest.numberOfInstallments();
+        BigDecimal installmentAmount = totalAmount
+                .divide(BigDecimal.valueOf(numberOfInstallments), 2, RoundingMode.HALF_UP);
+
+        BigDecimal sumOfPreviousAmounts = BigDecimal.ZERO;
+        List<LoanInstallment> installments = new ArrayList<>();
+
+        for (int i = 0; i < numberOfInstallments; i++) {
+            LoanInstallment loanInstallment = new LoanInstallment();
+            BigDecimal amount;
+
+            if (i == numberOfInstallments - 1) {
+                amount = totalAmount.subtract(sumOfPreviousAmounts);
+            } else {
+                amount = installmentAmount;
+                sumOfPreviousAmounts = sumOfPreviousAmounts.add(amount);
+            }
+
+            loanInstallment.setAmount(amount);
+            loanInstallment.setPaidAmount(BigDecimal.ZERO);
+            loanInstallment.setIsPaid(false);
+            loanInstallment.setPaymentDate(null);
+            loanInstallment.setLoan(loan);
+            LocalDate dueDate = LocalDate.now().plusMonths(i + 1).withDayOfMonth(1);
+            loanInstallment.setDueDate(dueDate);
+            installments.add(loanInstallment);
+        }
+
+        return installments;
     }
 
-    public List<Loan> filterLoans(CriteriaRequest criteriaRequest) {
-        Specification<Loan> spec = SpecificationBuilder.buildSpecification(criteriaRequest.getCriteriaList());
+
+    public List<Loan> filterLoans(LoanFilterRequest loanFilterRequest) {
+        Specification<Loan> spec = SpecificationBuilder.buildSpecification(loanFilterRequest.getFilterList());
         return loanRepository.findAll(spec).stream().toList();
     }
 }
