@@ -6,7 +6,10 @@ import com.ing.loan.management.entity.Customer;
 import com.ing.loan.management.entity.Loan;
 import com.ing.loan.management.entity.LoanInstallment;
 import com.ing.loan.management.repository.LoanRepository;
+import com.ing.loan.management.request.LoanPayRequest;
 import com.ing.loan.management.request.LoanRequest;
+import com.ing.loan.management.response.LoanPaymentResponse;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
@@ -15,9 +18,11 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 
+@Transactional
 @RequiredArgsConstructor
 @Service
 public class LoanService {
@@ -27,8 +32,7 @@ public class LoanService {
     private static final Set<Integer> ALLOWED_INSTALLMENTS = Set.of(6, 9, 12, 24);
     private static final BigDecimal MIN_INTEREST_RATE = new BigDecimal("0.1");
     private static final BigDecimal MAX_INTEREST_RATE = new BigDecimal("0.5");
-
-
+    
     public Loan create(LoanRequest loanRequest) throws IllegalAccessException {
         Long customerId = loanRequest.customerId();
         Customer customer = customerService.findById(customerId);
@@ -45,6 +49,8 @@ public class LoanService {
 
         List<LoanInstallment> loanInstallments = prepareLoanInstallments(loanRequest, loan);
         loan.setInstallments(loanInstallments);
+
+        customerService.updateCreditLimit(customerId,loanRequest.amount());
 
         return loanRepository.save(loan);
     }
@@ -107,9 +113,51 @@ public class LoanService {
         return installments;
     }
 
-
     public List<Loan> filterLoans(LoanFilterRequest loanFilterRequest) {
         Specification<Loan> spec = SpecificationBuilder.buildSpecification(loanFilterRequest.getFilterList());
         return loanRepository.findAll(spec).stream().toList();
     }
+
+    public LoanPaymentResponse pay(LoanPayRequest request) {
+        Long loanId = request.loanId();
+        BigDecimal incomingPayment = request.incomingPayment();
+        Loan loan = loanRepository.findById(loanId).orElseThrow();
+        List<LoanInstallment> installments = loan.getInstallments();
+
+        installments.sort(Comparator.comparing(LoanInstallment::getDueDate));
+        LocalDate today = LocalDate.now();
+        LocalDate maxPayableDate = LocalDate.now().withDayOfMonth(1).plusMonths(3);
+        int installmentsPaid = 0;
+        BigDecimal totalPaid = BigDecimal.ZERO;
+
+        for (LoanInstallment installment : installments) {
+            if (installment.getIsPaid()) continue;
+
+            if (installment.getDueDate().isAfter(maxPayableDate)) break;
+
+            BigDecimal amount = installment.getAmount();
+
+            if (incomingPayment.compareTo(amount) >= 0) {
+                installment.setPaidAmount(amount);
+                installment.setIsPaid(true);
+                installment.setPaymentDate(today);
+
+                incomingPayment = incomingPayment.subtract(amount);
+                totalPaid = totalPaid.add(amount);
+                installmentsPaid++;
+            } else {
+                break;
+            }
+        }
+
+        loan.setInstallments(installments);
+
+        boolean loanFullyPaid = installments.stream().allMatch(LoanInstallment::getIsPaid);
+        if (loanFullyPaid) {
+            loan.setIsPaid(true);
+        }
+        loanRepository.save(loan);
+        return new LoanPaymentResponse(installmentsPaid, totalPaid, loanFullyPaid);
+    }
+
 }

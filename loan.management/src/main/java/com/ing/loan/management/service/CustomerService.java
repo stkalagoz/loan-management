@@ -5,6 +5,8 @@ import com.ing.loan.management.repository.CustomerRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
+
 @RequiredArgsConstructor
 @Service
 public class CustomerService {
@@ -13,5 +15,13 @@ public class CustomerService {
 
     public Customer findById(Long customerId) {
         return repository.findById(customerId).orElseThrow();
+    }
+
+    public void updateCreditLimit(Long id, BigDecimal loanAmount) {
+        repository.findById(id).ifPresent(customer -> {
+            BigDecimal usedCreditLimit = customer.getUsedCreditLimit().add(loanAmount);
+            customer.setUsedCreditLimit(usedCreditLimit);
+            repository.saveAndFlush(customer);
+        });
     }
 }
