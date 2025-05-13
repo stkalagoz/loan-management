@@ -62,6 +62,12 @@ JDBC URL: jdbc:h2:mem:mydb
 
 ### 📌 REST API Endpoints
 
+#### Swagger
+
+You can reach swagger url in this link
+
+URL: http://localhost:8080/swagger-ui.html
+
 #### 🔍 Filter Loans
 
 GET /api/v1/loan/filter
