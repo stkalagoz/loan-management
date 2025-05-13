@@ -3,6 +3,8 @@ package com.ing.loan.management.service;
 import com.ing.loan.management.entity.Customer;
 import com.ing.loan.management.entity.Loan;
 import com.ing.loan.management.entity.LoanInstallment;
+import com.ing.loan.management.filter.Filter;
+import com.ing.loan.management.filter.LoanFilterRequest;
 import com.ing.loan.management.generator.CustomerGenerator;
 import com.ing.loan.management.generator.LoanGenerator;
 import com.ing.loan.management.repository.LoanRepository;
@@ -14,12 +16,15 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.jpa.domain.Specification;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
 
@@ -57,28 +62,62 @@ class LoanServiceTests {
 
 	@Test
 	void pay_shouldMarkInstallmentsPaidAndReturnResponse() {
-		// Arrange
-		LoanPayRequest loanPayRequest = LoanGenerator.getLoanPayRequest(); // assumes loanId and incomingPayment
-		Loan loan = LoanGenerator.getLoan(); // must include unpaid installments
+		LoanPayRequest loanPayRequest = LoanGenerator.getLoanPayRequest();
+		Loan loan = LoanGenerator.getLoan();
 
-		// Get and attach installments directly to the loan
-		List<LoanInstallment> installments = LoanGenerator.getLoanInstallments(); // assumes list of 2–3 unpaid installments
+		List<LoanInstallment> installments = LoanGenerator.getLoanInstallments();
 		loan.setInstallments(installments);
 
 		when(repository.findById(loan.getId())).thenReturn(Optional.of(loan));
 		when(repository.save(any(Loan.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-		// Act
 		LoanPaymentResponse response = service.pay(loanPayRequest);
 
-		// Assert
 		assertThat(response.totalPaid()).isEqualTo(BigDecimal.valueOf(5000));
 		assertThat(response.installmentsPaid()).isEqualTo(1);
-		assertThat(response.loanCompletelyPaid()).isTrue(); // assuming one unpaid remains
+		assertThat(response.loanCompletelyPaid()).isTrue();
 
 		verify(repository).save(loan);
 	}
 
+	@Test
+	void findAllInstallmentsByLoanId_shouldReturnInstallments_whenLoanExists() {
+		Long loanId = LoanGenerator.getValidLoanId();
+		Loan loan = LoanGenerator.getLoan();
+		List<LoanInstallment> installments = loan.getInstallments();
+
+		when(repository.findById(loanId)).thenReturn(Optional.of(loan));
+
+		List<LoanInstallment> result = service.findAllInstallmentsByLoanId(loanId);
+
+		assertThat(result).hasSize(2);
+		assertThat(result).containsExactlyElementsOf(installments);
+		verify(repository).findById(loanId);
+	}
+
+	@Test
+	void findAllInstallmentsByLoanId_shouldThrowException_whenLoanDoesNotExist() {
+		Long loanId = LoanGenerator.getInvalidLoanId();
+		when(repository.findById(loanId)).thenReturn(Optional.empty());
+
+		assertThrows(NoSuchElementException.class, () -> service.findAllInstallmentsByLoanId(loanId));
+		verify(repository).findById(loanId);
+	}
+
+	@Test
+	void filterLoans_shouldReturnLoansMatchingFilters() {
+		Filter filter = LoanGenerator.getFilter();
+		LoanFilterRequest filterRequest = new LoanFilterRequest();
+		filterRequest.setFilterList(List.of(filter));
+		Loan mockLoan = LoanGenerator.getLoan();
+
+		when(repository.findAll(any(Specification.class))).thenReturn(List.of(mockLoan));
+
+		List<Loan> result = service.filterLoans(filterRequest);
+
+		assertThat(result).hasSize(1);
+		verify(repository, times(1)).findAll(any(Specification.class));
+	}
 
 
 

@@ -16,12 +16,13 @@ public class LoanGenerator {
     private static final BigDecimal AMOUNT = new BigDecimal(5000);
     private static final BigDecimal INTEREST_RATE = new BigDecimal("0.2");
     private static final int INSTALLMENTS = 6;
-    private static final Long ID = 1L;
+    private static final Long INVALID_LOAN_ID = 99L;
+    private static final Long VALID_LOAN_ID = 1L;
 
 
     public static Loan getLoan() {
         Loan mockLoan = new Loan();
-        mockLoan.setId(ID);
+        mockLoan.setId(VALID_LOAN_ID);
         mockLoan.setLoanAmount(AMOUNT);
         mockLoan.setIsPaid(true);
         mockLoan.setInstallments(getLoanInstallments());
@@ -69,6 +70,14 @@ public class LoanGenerator {
     }
 
     public static LoanPayRequest getLoanPayRequest() {
-        return new LoanPayRequest(ID, AMOUNT);
+        return new LoanPayRequest(VALID_LOAN_ID, AMOUNT);
+    }
+
+    public static Long getInvalidLoanId () {
+        return INVALID_LOAN_ID;
+    }
+
+    public static Long getValidLoanId () {
+        return VALID_LOAN_ID;
     }
 }
