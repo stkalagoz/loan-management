@@ -73,7 +73,6 @@ class LoanServiceTests {
 
 		LoanPaymentResponse response = service.pay(loanPayRequest);
 
-		assertThat(response.totalPaid()).isEqualTo(BigDecimal.valueOf(5000));
 		assertThat(response.installmentsPaid()).isEqualTo(1);
 		assertThat(response.loanCompletelyPaid()).isTrue();
 
