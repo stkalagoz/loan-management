@@ -27,17 +27,6 @@ public class LoanController {
 
     private final LoanService service;
 
-    @Operation(
-            summary = "Create a new loan",
-            description = "Creates a new loan for a given customer with the specified amount, interest rate, and installment count.",
-            responses = {
-                    @ApiResponse(responseCode = "201", description = "Loan created successfully",
-                            content = @Content(schema = @Schema(implementation = Loan.class))),
-                    @ApiResponse(responseCode = "400", description = "Invalid input", content = @Content),
-                    @ApiResponse(responseCode = "500", description = "Internal server error", content = @Content)
-            }
-    )
-
     @PostMapping("/create")
     @ResponseStatus(HttpStatus.CREATED)
     public ResponseEntity<Loan> create(@RequestBody LoanCreateRequest request) throws IllegalAccessException {
@@ -48,16 +37,19 @@ public class LoanController {
 
     @GetMapping("/filter")
     public List<Loan> filter(@RequestBody LoanFilterRequest request) {
+        log.info("loans filtering {}", request);
         return service.filterLoans(request);
     }
 
     @PostMapping("/pay")
     public LoanPaymentResponse pay(@RequestBody LoanPayRequest request) {
+        log.info("loan paying {}", request);
         return service.pay(request);
     }
 
     @GetMapping("/list/installments")
     public List<LoanInstallment> findAllInstallmentsByLoanId(@RequestBody Long loanId) {
+        log.info("loan installment filtering {}", loanId);
         return service.findAllInstallmentsByLoanId(loanId);
     }
 }
