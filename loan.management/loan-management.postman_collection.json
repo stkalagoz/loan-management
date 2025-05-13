@@ -51,28 +51,87 @@
 						"exec": [
 							"pm.test(\"Status code is 200\", function () {",
 							"    pm.response.to.have.status(200);",
-							"});"
+							"});",
+							"var template = `",
+							"<style type=\"text/css\">",
+							"    .tftable {font-size:14px;color:#333333;width:100%;border-width: 1px;border-color: #87ceeb;border-collapse: collapse;}",
+							"    .tftable th {font-size:18px;background-color:#87ceeb;border-width: 1px;padding: 8px;border-style: solid;border-color: #87ceeb;text-align:left;}",
+							"    .tftable tr {background-color:#ffffff;}",
+							"    .tftable td {font-size:14px;border-width: 1px;padding: 8px;border-style: solid;border-color: #87ceeb;}",
+							"    .tftable tr:hover {background-color:#e0ffff;}",
+							"</style>",
+							"",
+							"<table class=\"tftable\" border=\"1\">",
+							"    <tr>",
+							"        <th>ID</th>",
+							"        <th>Loan Amount</th>",
+							"        <th>Number of Installments</th>",
+							"        <th>Create Date</th>",
+							"        <th>Is Paid</th>",
+							"    </tr>",
+							"    ",
+							"    {{#each response}}",
+							"        <tr>",
+							"            <td>{{id}}</td>",
+							"            <td>{{loanAmount}}</td>",
+							"            <td>{{numberOfInstallment}}</td>",
+							"            <td>{{createDate}}</td>",
+							"            <td>{{isPaid}}</td>",
+							"        </tr>",
+							"    {{/each}}",
+							"</table>",
+							"`;",
+							"",
+							"function constructVisualizerPayload() {",
+							"    return {response: pm.response.json()}",
+							"}",
+							"",
+							"pm.visualizer.set(template, constructVisualizerPayload());"
 						],
-						"type": "text/javascript"
+						"type": "text/javascript",
+						"packages": {}
 					}
 				}
 			],
 			"request": {
+				"auth": {
+					"type": "basic",
+					"basic": [
+						{
+							"key": "password",
+							"value": "password",
+							"type": "string"
+						},
+						{
+							"key": "username",
+							"value": "admin",
+							"type": "string"
+						}
+					]
+				},
 				"method": "GET",
 				"header": [],
-				"url": {
-					"raw": "{{base_url}}/info?id=1",
-					"host": [
-						"{{base_url}}"
-					],
-					"path": [
-						"info"
-					],
-					"query": [
-						{
-							"key": "id",
-							"value": "1"
+				"body": {
+					"mode": "raw",
+					"raw": "{ \n    \"customerId\":1,\n    \"filterList\": [\n        {\n            \"key\": \"isPaid\",\n            \"value\": false,\n            \"operation\": \"eq\"\n        },\n        {\n            \"key\": \"numberOfInstallment\",\n            \"value\": 9,\n            \"operation\": \"eq\"\n        }\n    ]\n}",
+					"options": {
+						"raw": {
+							"language": "json"
 						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8080/api/v1/loan/filter",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"v1",
+						"loan",
+						"filter"
 					]
 				},
 				"description": "This is a GET request and it is used to \"get\" data from an endpoint. There is no request body for a GET request, but you can use query parameters to help specify the resource you want data on (e.g., in this request, we have `id=1`).\n\nA successful GET response will have a `200 OK` status, and should include some kind of response body - for example, HTML web content or JSON data."

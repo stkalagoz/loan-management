@@ -70,11 +70,16 @@ GET /api/v1/loan/filter
 
 ```
 {
+"customerId":1,
 "filterList": [
 {
-"key": "customer.id",
-"operation": "eq",
-"value": 1
+"key": "isPaid",
+"value": false,
+"operation": "eq"
+},{
+"key": "numberOfInstallment",
+"value": 9,
+"operation": "eq"
 }
 ]
 }

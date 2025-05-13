@@ -1,6 +1,5 @@
 package com.ing.loan.management.service;
 
-import com.ing.loan.management.filter.LoanFilterRequest;
 import com.ing.loan.management.filter.SpecificationBuilder;
 import com.ing.loan.management.entity.Customer;
 import com.ing.loan.management.entity.Loan;
@@ -8,6 +7,7 @@ import com.ing.loan.management.entity.LoanInstallment;
 import com.ing.loan.management.pattern.strategy.AdjustmentStrategyFactory;
 import com.ing.loan.management.pattern.strategy.PaymentAdjustmentStrategy;
 import com.ing.loan.management.repository.LoanRepository;
+import com.ing.loan.management.request.LoanFilterRequest;
 import com.ing.loan.management.request.LoanPayRequest;
 import com.ing.loan.management.request.LoanCreateRequest;
 import com.ing.loan.management.response.LoanPaymentResponse;
@@ -118,7 +118,7 @@ public class LoanService {
     }
 
     public List<Loan> filterLoans(LoanFilterRequest loanFilterRequest) {
-        Specification<Loan> spec = SpecificationBuilder.buildSpecification(loanFilterRequest.getFilterList());
+        Specification<Loan> spec = SpecificationBuilder.buildSpecificationForFilterLoan(loanFilterRequest);
         return loanRepository.findAll(spec).stream().toList();
     }
 

@@ -3,6 +3,7 @@ package com.ing.loan.management.generator;
 import com.ing.loan.management.entity.LoanInstallment;
 import com.ing.loan.management.filter.Filter;
 import com.ing.loan.management.entity.Loan;
+import com.ing.loan.management.request.LoanFilterRequest;
 import com.ing.loan.management.request.LoanPayRequest;
 import com.ing.loan.management.request.LoanCreateRequest;
 
@@ -79,5 +80,9 @@ public class LoanGenerator {
 
     public static Long getValidLoanId () {
         return VALID_LOAN_ID;
+    }
+
+    public static LoanFilterRequest getLoanFilterMock() {
+        return new LoanFilterRequest(CUSTOMER_ID, List.of(getFilter()));
     }
 }

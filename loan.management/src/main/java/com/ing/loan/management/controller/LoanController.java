@@ -2,8 +2,9 @@ package com.ing.loan.management.controller;
 
 import com.ing.loan.management.entity.Loan;
 import com.ing.loan.management.entity.LoanInstallment;
-import com.ing.loan.management.filter.LoanFilterRequest;
+import com.ing.loan.management.filter.Filter;
 import com.ing.loan.management.request.LoanCreateRequest;
+import com.ing.loan.management.request.LoanFilterRequest;
 import com.ing.loan.management.request.LoanPayRequest;
 import com.ing.loan.management.response.LoanPaymentResponse;
 import com.ing.loan.management.service.LoanService;
@@ -33,7 +34,7 @@ public class LoanController {
 
     @GetMapping("/filter")
     public List<Loan> filter(@RequestBody LoanFilterRequest request) {
-        log.info("loans filtering {}", request);
+        log.info("loans filtering {}",request);
         return service.filterLoans(request);
     }
 

@@ -4,10 +4,10 @@ import com.ing.loan.management.entity.Customer;
 import com.ing.loan.management.entity.Loan;
 import com.ing.loan.management.entity.LoanInstallment;
 import com.ing.loan.management.filter.Filter;
-import com.ing.loan.management.filter.LoanFilterRequest;
 import com.ing.loan.management.generator.CustomerGenerator;
 import com.ing.loan.management.generator.LoanGenerator;
 import com.ing.loan.management.repository.LoanRepository;
+import com.ing.loan.management.request.LoanFilterRequest;
 import com.ing.loan.management.request.LoanPayRequest;
 import com.ing.loan.management.request.LoanCreateRequest;
 import com.ing.loan.management.response.LoanPaymentResponse;
@@ -105,14 +105,12 @@ class LoanServiceTests {
 
 	@Test
 	void filterLoans_shouldReturnLoansMatchingFilters() {
-		Filter filter = LoanGenerator.getFilter();
-		LoanFilterRequest filterRequest = new LoanFilterRequest();
-		filterRequest.setFilterList(List.of(filter));
 		Loan mockLoan = LoanGenerator.getLoan();
+		LoanFilterRequest loanFilterMock = LoanGenerator.getLoanFilterMock();
 
 		when(repository.findAll(any(Specification.class))).thenReturn(List.of(mockLoan));
 
-		List<Loan> result = service.filterLoans(filterRequest);
+		List<Loan> result = service.filterLoans(loanFilterMock);
 
 		assertThat(result).hasSize(1);
 		verify(repository, times(1)).findAll(any(Specification.class));
