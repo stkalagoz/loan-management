@@ -9,7 +9,7 @@ import com.ing.loan.management.generator.CustomerGenerator;
 import com.ing.loan.management.generator.LoanGenerator;
 import com.ing.loan.management.repository.LoanRepository;
 import com.ing.loan.management.request.LoanPayRequest;
-import com.ing.loan.management.request.LoanRequest;
+import com.ing.loan.management.request.LoanCreateRequest;
 import com.ing.loan.management.response.LoanPaymentResponse;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -42,7 +42,7 @@ class LoanServiceTests {
 
 	@Test
 	void create_shouldCreateLoanAndUpdateCreditLimit() throws IllegalAccessException {
-		LoanRequest request = LoanGenerator.getLoanRequest();
+		LoanCreateRequest request = LoanGenerator.getLoanRequest();
 		Customer customer = CustomerGenerator.getCustomer();
 		Long customerId = CustomerGenerator.getValidMockId();
 		BigDecimal amount=LoanGenerator.getLoanAmount();

@@ -9,7 +9,7 @@ import com.ing.loan.management.pattern.strategy.AdjustmentStrategyFactory;
 import com.ing.loan.management.pattern.strategy.PaymentAdjustmentStrategy;
 import com.ing.loan.management.repository.LoanRepository;
 import com.ing.loan.management.request.LoanPayRequest;
-import com.ing.loan.management.request.LoanRequest;
+import com.ing.loan.management.request.LoanCreateRequest;
 import com.ing.loan.management.response.LoanPaymentResponse;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -37,24 +37,24 @@ public class LoanService {
     private static final BigDecimal MAX_INTEREST_RATE = new BigDecimal("0.5");
     private final AdjustmentStrategyFactory adjustmentStrategyFactory = new AdjustmentStrategyFactory(); // or inject via @Component if desired
 
-    public Loan create(LoanRequest loanRequest) throws IllegalAccessException {
-        Long customerId = loanRequest.customerId();
+    public Loan create(LoanCreateRequest loanCreateRequest) throws IllegalAccessException {
+        Long customerId = loanCreateRequest.customerId();
         Customer customer = customerService.findById(customerId);
-        validateAmount(loanRequest.amount(), customer);
-        validateInstallmentCount(loanRequest.numberOfInstallments());
-        validateInterestRate(loanRequest.interestRate());
+        validateAmount(loanCreateRequest.amount(), customer);
+        validateInstallmentCount(loanCreateRequest.numberOfInstallments());
+        validateInterestRate(loanCreateRequest.interestRate());
         Loan loan = Loan.builder().
                 customer(customer).
-                loanAmount(loanRequest.amount()).
-                numberOfInstallment(loanRequest.numberOfInstallments()).
+                loanAmount(loanCreateRequest.amount()).
+                numberOfInstallment(loanCreateRequest.numberOfInstallments()).
                 createDate(LocalDate.now()).
                 isPaid(false).
                 build();
 
-        List<LoanInstallment> loanInstallments = prepareLoanInstallments(loanRequest, loan);
+        List<LoanInstallment> loanInstallments = prepareLoanInstallments(loanCreateRequest, loan);
         loan.setInstallments(loanInstallments);
 
-        customerService.updateCreditLimit(customerId,loanRequest.amount());
+        customerService.updateCreditLimit(customerId, loanCreateRequest.amount());
 
         return loanRepository.save(loan);
     }
@@ -84,9 +84,9 @@ public class LoanService {
         }
     }
 
-    private List<LoanInstallment> prepareLoanInstallments(LoanRequest loanRequest, Loan loan) {
-        BigDecimal totalAmount = loanRequest.amount().multiply(BigDecimal.ONE.add(loanRequest.interestRate()));
-        int numberOfInstallments = loanRequest.numberOfInstallments();
+    private List<LoanInstallment> prepareLoanInstallments(LoanCreateRequest loanCreateRequest, Loan loan) {
+        BigDecimal totalAmount = loanCreateRequest.amount().multiply(BigDecimal.ONE.add(loanCreateRequest.interestRate()));
+        int numberOfInstallments = loanCreateRequest.numberOfInstallments();
         BigDecimal installmentAmount = totalAmount
                 .divide(BigDecimal.valueOf(numberOfInstallments), 2, RoundingMode.HALF_UP);
 

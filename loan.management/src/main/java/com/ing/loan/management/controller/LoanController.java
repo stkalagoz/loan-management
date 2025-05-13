@@ -4,7 +4,7 @@ import com.ing.loan.management.entity.LoanInstallment;
 import com.ing.loan.management.filter.LoanFilterRequest;
 import com.ing.loan.management.entity.Loan;
 import com.ing.loan.management.request.LoanPayRequest;
-import com.ing.loan.management.request.LoanRequest;
+import com.ing.loan.management.request.LoanCreateRequest;
 import com.ing.loan.management.response.LoanPaymentResponse;
 import com.ing.loan.management.service.LoanService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -40,7 +40,7 @@ public class LoanController {
 
     @PostMapping("/create")
     @ResponseStatus(HttpStatus.CREATED)
-    public ResponseEntity<Loan> create(@RequestBody LoanRequest request) throws IllegalAccessException {
+    public ResponseEntity<Loan> create(@RequestBody LoanCreateRequest request) throws IllegalAccessException {
         log.info("new loan creation {}", request);
         Loan loan = service.create(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(loan);

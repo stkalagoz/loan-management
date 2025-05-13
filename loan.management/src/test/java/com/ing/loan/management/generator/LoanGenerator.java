@@ -4,7 +4,7 @@ import com.ing.loan.management.entity.LoanInstallment;
 import com.ing.loan.management.filter.Filter;
 import com.ing.loan.management.entity.Loan;
 import com.ing.loan.management.request.LoanPayRequest;
-import com.ing.loan.management.request.LoanRequest;
+import com.ing.loan.management.request.LoanCreateRequest;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -37,8 +37,8 @@ public class LoanGenerator {
         return filter;
     }
 
-    public static LoanRequest getLoanRequest() {
-        return new LoanRequest(CUSTOMER_ID, AMOUNT, INTEREST_RATE, INSTALLMENTS);
+    public static LoanCreateRequest getLoanRequest() {
+        return new LoanCreateRequest(CUSTOMER_ID, AMOUNT, INTEREST_RATE, INSTALLMENTS);
     }
 
     public static BigDecimal getLoanAmount() {
