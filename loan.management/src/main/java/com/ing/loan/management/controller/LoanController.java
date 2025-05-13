@@ -1,5 +1,6 @@
 package com.ing.loan.management.controller;
 
+import com.ing.loan.management.entity.LoanInstallment;
 import com.ing.loan.management.filter.LoanFilterRequest;
 import com.ing.loan.management.entity.Loan;
 import com.ing.loan.management.request.LoanPayRequest;
@@ -53,6 +54,11 @@ public class LoanController {
     @PostMapping("/pay")
     public LoanPaymentResponse pay(@RequestBody LoanPayRequest request) {
         return service.pay(request);
+    }
+
+    @GetMapping("/list/installments")
+    public List<LoanInstallment> findAllInstallmentsByLoanId(@RequestBody Long loanId) {
+        return service.findAllInstallmentsByLoanId(loanId);
     }
 }
 

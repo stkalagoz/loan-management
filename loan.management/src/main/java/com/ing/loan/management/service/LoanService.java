@@ -160,4 +160,9 @@ public class LoanService {
         return new LoanPaymentResponse(installmentsPaid, totalPaid, loanFullyPaid);
     }
 
+    public List<LoanInstallment> findAllInstallmentsByLoanId(Long loanId) {
+        Loan loan = loanRepository.findById(loanId).orElseThrow();
+        return loan.getInstallments();
+    }
+
 }
