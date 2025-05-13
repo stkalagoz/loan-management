@@ -194,7 +194,19 @@ You can import and test the API using the provided Postman collection:
 4. Use these credentials:
     - Username: `admin`
     - Password: `password`
+---
 
+### ✅ Testing & Coverage
+
+- Unit tests written using **JUnit 5** and **Mockito**
+- Test coverage exceeds **80%** across the service layer
+- Business logic including payment flow, loan creation, validation, and installment calculations are all tested
+
+#### 🔍 Running Tests Locally
+
+```bash
+./mvnw test
+ ```
 ### 📒 Notes
 
 Reward is applied if paid before due date:
