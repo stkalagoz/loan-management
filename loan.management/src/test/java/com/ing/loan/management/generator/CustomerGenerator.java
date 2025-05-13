@@ -23,4 +23,8 @@ public class CustomerGenerator {
     public static Long getInvalidMockId() {
         return INVALID_MOCK_ID;
     }
+
+    public static Long getValidMockId() {
+        return VALID_MOCK_ID;
+    }
 }

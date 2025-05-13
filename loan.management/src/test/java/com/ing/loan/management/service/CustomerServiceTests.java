@@ -9,6 +9,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.math.BigDecimal;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 
@@ -28,7 +29,7 @@ class CustomerServiceTests {
 	@Test
 	void findById_shouldReturnCustomer_whenCustomerExists() {
 		Customer mockCustomer = CustomerGenerator.getCustomer();
-		Long customerId = mockCustomer.getId();
+		Long customerId = CustomerGenerator.getValidMockId();
 
 		when(repository.findById(customerId)).thenReturn(Optional.of(mockCustomer));
 
@@ -45,6 +46,33 @@ class CustomerServiceTests {
 		when(repository.findById(customerId)).thenReturn(Optional.empty());
 
 		assertThrows(NoSuchElementException.class, () -> service.findById(customerId));
+		verify(repository, times(1)).findById(customerId);
+	}
+
+	@Test
+	void updateCreditLimit_shouldUpdateUsedCreditLimit_andSaveCustomer() {
+		Customer mockCustomer = CustomerGenerator.getCustomer();
+		Long customerId = CustomerGenerator.getValidMockId();
+		BigDecimal loanAmount = BigDecimal.valueOf(500);
+
+		when(repository.findById(customerId)).thenReturn(Optional.of(mockCustomer));
+
+		service.updateCreditLimit(customerId, loanAmount);
+
+		BigDecimal expectedLimit = BigDecimal.valueOf(1500);
+		verify(repository).saveAndFlush(mockCustomer);
+		verify(repository).findById(customerId);
+		assert mockCustomer.getUsedCreditLimit().equals(expectedLimit);
+	}
+
+	@Test
+	void updateCreditLimit_shouldNotSave_whenCustomerNotFound() {
+		Long customerId = CustomerGenerator.getInvalidMockId();
+		when(repository.findById(customerId)).thenReturn(Optional.empty());
+
+		service.updateCreditLimit(customerId, BigDecimal.valueOf(300));
+
+		verify(repository, never()).saveAndFlush(any());
 		verify(repository, times(1)).findById(customerId);
 	}
 }
