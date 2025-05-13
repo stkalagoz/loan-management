@@ -1,16 +1,12 @@
 package com.ing.loan.management.controller;
 
+import com.ing.loan.management.entity.Loan;
 import com.ing.loan.management.entity.LoanInstallment;
 import com.ing.loan.management.filter.LoanFilterRequest;
-import com.ing.loan.management.entity.Loan;
-import com.ing.loan.management.request.LoanPayRequest;
 import com.ing.loan.management.request.LoanCreateRequest;
+import com.ing.loan.management.request.LoanPayRequest;
 import com.ing.loan.management.response.LoanPaymentResponse;
 import com.ing.loan.management.service.LoanService;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
