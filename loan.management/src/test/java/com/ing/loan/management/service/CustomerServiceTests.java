@@ -59,10 +59,11 @@ class CustomerServiceTests {
 
 		service.updateCreditLimit(customerId, loanAmount);
 
-		BigDecimal expectedLimit = BigDecimal.valueOf(1500);
-		verify(repository).saveAndFlush(mockCustomer);
+		verify(repository).save(mockCustomer);
 		verify(repository).findById(customerId);
-		assert mockCustomer.getUsedCreditLimit().equals(expectedLimit);
+		assert mockCustomer.getUsedCreditLimit().equals(loanAmount);
+		verify(repository, times(1)).findById(customerId);
+		verify(repository, times(1)).save(mockCustomer);
 	}
 
 	@Test
@@ -72,7 +73,7 @@ class CustomerServiceTests {
 
 		service.updateCreditLimit(customerId, BigDecimal.valueOf(300));
 
-		verify(repository, never()).saveAndFlush(any());
+		verify(repository, never()).save(any());
 		verify(repository, times(1)).findById(customerId);
 	}
 }

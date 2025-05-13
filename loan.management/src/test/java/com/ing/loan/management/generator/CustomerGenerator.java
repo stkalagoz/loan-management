@@ -17,6 +17,7 @@ public class CustomerGenerator {
         mockCustomer.setCreditLimit(CREDIT_LIMIT);
         mockCustomer.setName(MOCK_NAME);
         mockCustomer.setSurname(MOCK_NAME);
+        mockCustomer.setUsedCreditLimit(BigDecimal.ZERO);
         return mockCustomer;
     }
 

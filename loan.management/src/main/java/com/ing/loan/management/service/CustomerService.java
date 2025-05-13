@@ -21,7 +21,7 @@ public class CustomerService {
         repository.findById(id).ifPresent(customer -> {
             BigDecimal usedCreditLimit = customer.getUsedCreditLimit().add(loanAmount);
             customer.setUsedCreditLimit(usedCreditLimit);
-            repository.saveAndFlush(customer);
+            repository.save(customer);
         });
     }
 }
